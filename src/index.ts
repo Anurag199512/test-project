@@ -1,0 +1,1 @@
+import './rick-N-morty';
