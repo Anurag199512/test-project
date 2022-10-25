@@ -8,9 +8,9 @@ function sleep(milliseconds: number) {
 
 async function fetchAndRetryIfNecessary(url: string): Promise<Character> {
   try {
-    const response = await (await axios.get(url)).data
+    const response = await (await axios.get(url)).data;
   
-    return response as unknown as  Character
+    return response as unknown as Character;
   } catch (e) {
     if (e.response?.status === 429) {
       await sleep(1000);
@@ -22,31 +22,35 @@ async function fetchAndRetryIfNecessary(url: string): Promise<Character> {
 async function findAllEpisodes() {
   console.time();
   let apiUrlForEpisodes: string | null = baseUrl + '/episode';
-  const episodes: Episode[] = []
+  const episodes: Episode[] = [];
 
   do {
     const response: ApiResponse<Episode> = await axios.get(apiUrlForEpisodes);
     apiUrlForEpisodes = response.data.info.next;
 
-    for (const result of response.data.results) {
-      result.characterInfo = [];
+    for (const episode of response.data.results) {
+      const characters: Character[] = [];
+      console.log('Combining data for episode:', episode.name);
 
-      for (const character of result.characters) {
+      for (const character of episode.characters) {
         try {
           /* 
             function fetchAndRetryIfNecessary
             added a rate limiter to avoid 429 from the external server with a default wait period of 1 second
             as there was no retry-after value from the external api.
           */
-          const characterResponse: Character = await fetchAndRetryIfNecessary(character);
+          if (typeof character === 'string') {
+            const characterResponse: Character = await fetchAndRetryIfNecessary(character);
   
-          result.characterInfo.push(characterResponse)  
+            characters.push(characterResponse);
+          }
         } catch (e) {
           console.error('Error in character api', e);
         }
       }
 
-      episodes.push(result); 
+      episode.characters = characters
+      episodes.push(episode); 
     }
   } while (apiUrlForEpisodes !== null)
   console.timeEnd();
@@ -57,31 +61,36 @@ async function findAllEpisodes() {
 
 async function findEpisodeOnPage(page: number) {
   const apiUrl = `${baseUrl}/episode?page=${page}`;
-  const episodes: Episode[] = []
+  const episodes: Episode[] = [];
 
   const response: ApiResponse<Episode> = await axios.get(apiUrl);
 
-  for (const result of response.data.results) {
-    result.characterInfo = [];
+  for (const episode of response.data.results) {
+    const characters: Character[] = [];
+    console.log('Combining data for episode:', episode.name);
 
-    for (const character of result.characters) {
+    for (const character of episode.characters) {
       try {
         /* 
           function fetchAndRetryIfNecessary
           added a rate limiter to avoid 429 from the external server with a default wait period of 1 second
           as there was no retry-after value from the external api.
         */
-        const characterResponse: Character = await fetchAndRetryIfNecessary(character);
+        if (typeof character === 'string') {
+          const characterResponse: Character = await fetchAndRetryIfNecessary(character);
 
-        result.characterInfo.push(characterResponse)  
+          characters.push(characterResponse);
+        }
       } catch (e) {
         console.error('Error in character api', e);
       }
     }
 
-    episodes.push(result); 
+    episode.characters = characters
+    episodes.push(episode); 
   }
+  console.log('Final Response:', episodes[0].characters, episodes[0].characters[0]);
 }
 
-findAllEpisodes();
-// findEpisodeOnPage(1)
+// findAllEpisodes();
+findEpisodeOnPage(1)

@@ -3,8 +3,8 @@ export interface Episode {
   name: string;
   air_date: string;
   episode: string;
-  characters: string[];
-  characterInfo?: Character[]; // custom key to hold character api data
+  characters: string[] | Character[];
+  // characterInfo?: Character[]; // custom key to hold character api data
   url: string;
   created: Date;
 }

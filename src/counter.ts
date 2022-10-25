@@ -25,3 +25,11 @@ getB(); // 11
 nextA();
 getA(); // 3
 getB(); // 11
+
+
+const [getC, nextC] = counter();
+getC()
+nextC()
+getC()
+getB()
+getA()
