@@ -92,5 +92,5 @@ async function findEpisodeOnPage(page: number) {
   console.log('Final Response:', episodes[0].characters, episodes[0].characters[0]);
 }
 
-// findAllEpisodes();
-findEpisodeOnPage(1)
+findAllEpisodes();
+// findEpisodeOnPage(1)
